@@ -2,32 +2,24 @@
 
 LangGraph·ReAct 패턴과 모의 도구를 쓰는 **교육용 보안 시뮬레이션**입니다. USB·의심 다운로드·게임 크랙 유혹 등 시나리오를 **실제 위험 없이** Streamlit UI에서 체험합니다. 상세 스펙은 [`seed.yaml`](seed.yaml)을 참고하세요.
 
-## 전제 (폴더 구조)
+## 로컬 실행
 
-`app.py`는 import 경로(`ouro_p2.*`)와 `sys.path` 설정 때문에 **이 저장소를 클론한 폴더 이름이 `ouro_p2`이고, 그 상위 디렉터리에서 앱을 실행**하는 구성을 가정합니다.
-
-```text
-내워크스페이스/
-  ouro_p2/          ← 여기에 이 저장소를 클론 (폴더명 ouro_p2 유지)
-    app.py
-    graph.py
-    ...
-```
-
-예시:
+저장소 루트에 `app.py`와 나머지 모듈이 같은 폴더에 있으면 됩니다. 폴더 이름은 자유롭습니다.
 
 ```bash
-mkdir my-lab && cd my-lab
-git clone https://github.com/hakyeoung/AI-Agent-Project2.git ouro_p2
-cd ouro_p2
+git clone https://github.com/hakyeoung/AI-Agent-Project2.git
+cd AI-Agent-Project2
 python -m venv .venv
-.venv\Scripts\activate   # Windows
+.venv\Scripts\activate   # Windows — macOS/Linux: source .venv/bin/activate
 pip install -r requirements.txt
-cd ..
-streamlit run ouro_p2/app.py
+streamlit run app.py
 ```
 
-macOS/Linux에서는 활성화만 `source .venv/bin/activate`로 바꾸면 됩니다.
+다른 프로젝트 안에 **`ouro_p2`라는 하위 폴더**로만 넣어 쓰는 경우(예: `day3/ouro_p2/`)에도 동일하게 그 폴더에서 `streamlit run app.py`를 실행하면 됩니다.
+
+## Streamlit Community Cloud
+
+앱 경로(Main file)를 **`app.py`**(저장소 루트)로 두면 됩니다. Secrets에 `OPENAI_API_KEY`를 등록하세요.
 
 ## 환경 변수
 

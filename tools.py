@@ -7,7 +7,10 @@ import json
 
 from langchain_core.tools import tool
 
-from .infection_ui import infection_payload
+try:
+    from .infection_ui import infection_payload
+except ImportError:
+    from infection_ui import infection_payload
 
 # 그래프 분기 파싱용 마커(사용자에게는 자연어 본문 위주)
 AUTORUN_SUSPICIOUS = "AUTORUN_SUSPICIOUS"

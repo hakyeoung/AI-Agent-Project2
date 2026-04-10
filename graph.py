@@ -11,15 +11,26 @@ from langchain_openai import ChatOpenAI
 from langgraph.graph import END, START, StateGraph
 from langgraph.prebuilt import create_react_agent
 
-from .infection_ui import infection_payload
-from .prompts import MISSION_PROMPTS, MISSION_TITLES
-from .state import SecurityLabState
-from .tools import (
-    AUTORUN_SUSPICIOUS,
-    FAUX_INFECTION_TRIGGER,
-    MISSION_PHASE_COMPLETE,
-    tools_for_mission,
-)
+try:
+    from .infection_ui import infection_payload
+    from .prompts import MISSION_PROMPTS, MISSION_TITLES
+    from .state import SecurityLabState
+    from .tools import (
+        AUTORUN_SUSPICIOUS,
+        FAUX_INFECTION_TRIGGER,
+        MISSION_PHASE_COMPLETE,
+        tools_for_mission,
+    )
+except ImportError:
+    from infection_ui import infection_payload
+    from prompts import MISSION_PROMPTS, MISSION_TITLES
+    from state import SecurityLabState
+    from tools import (
+        AUTORUN_SUSPICIOUS,
+        FAUX_INFECTION_TRIGGER,
+        MISSION_PHASE_COMPLETE,
+        tools_for_mission,
+    )
 
 MISSION_ORDER = ("usb", "download", "crack")
 

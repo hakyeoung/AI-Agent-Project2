@@ -8,15 +8,16 @@ import sys
 from pathlib import Path
 from typing import Any
 
-_ROOT = Path(__file__).resolve().parents[1]
-if str(_ROOT) not in sys.path:
-    sys.path.insert(0, str(_ROOT))
+# Streamlit Cloud(저장소 루트의 app.py)와 로컬(day3/ouro_p2/app.py) 모두: 스크립트 폴더를 path에 넣고 형제 모듈로 import
+_APP_DIR = str(Path(__file__).resolve().parent)
+if _APP_DIR not in sys.path:
+    sys.path.insert(0, _APP_DIR)
 
 import streamlit as st
 from dotenv import load_dotenv
 from langchain_core.messages import AIMessage, HumanMessage
 
-from ouro_p2.desktop_chrome import (
+from desktop_chrome import (
     OS_NAME,
     av_modal_html,
     desktop_frame_close,
@@ -26,9 +27,9 @@ from ouro_p2.desktop_chrome import (
     terminal_panel_html,
     toast_stack_html,
 )
-from ouro_p2.graph import build_security_lab_graph
-from ouro_p2.infection_ui import infection_overlay_html
-from ouro_p2.prompts import MISSION_TITLES
+from graph import build_security_lab_graph
+from infection_ui import infection_overlay_html
+from prompts import MISSION_TITLES
 
 load_dotenv()
 
