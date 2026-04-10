@@ -1,0 +1,323 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ouro_p2 보안 체험 랩 — 요구사항·도구·워크플로 보고서</title>
+  <script src="https://cdn.jsdelivr.net/npm/mermaid@10/dist/mermaid.min.js"></script>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --surface: #1a2332;
+      --border: #2d3a4d;
+      --text: #e7ecf3;
+      --muted: #8b9cb3;
+      --accent: #3d8fd1;
+      --ok: #3d9970;
+      --warn: #c9a227;
+    }
+    * { box-sizing: border-box; }
+    body {
+      font-family: "Segoe UI", "Malgun Gothic", sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      line-height: 1.65;
+      margin: 0;
+      padding: 2rem clamp(1rem, 4vw, 3rem);
+      max-width: 56rem;
+      margin-inline: auto;
+    }
+    h1 {
+      font-size: 1.75rem;
+      font-weight: 600;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 0.75rem;
+      margin-top: 0;
+    }
+    h2 {
+      font-size: 1.2rem;
+      margin-top: 2.25rem;
+      color: var(--accent);
+      font-weight: 600;
+    }
+    h3 { font-size: 1rem; margin-top: 1.5rem; color: var(--muted); font-weight: 600; }
+    p { margin: 0.75rem 0; color: var(--text); }
+    .meta {
+      color: var(--muted);
+      font-size: 0.9rem;
+      margin-bottom: 2rem;
+    }
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+    th, td {
+      border: 1px solid var(--border);
+      padding: 0.65rem 0.85rem;
+      text-align: left;
+      vertical-align: top;
+    }
+    th { background: var(--surface); color: var(--accent); font-weight: 600; }
+    tr:nth-child(even) td { background: rgba(26, 35, 50, 0.5); }
+    ul { margin: 0.5rem 0 1rem 1.25rem; padding: 0; }
+    li { margin: 0.35rem 0; }
+    .note {
+      background: var(--surface);
+      border-left: 4px solid var(--warn);
+      padding: 0.85rem 1rem;
+      margin: 1rem 0;
+      font-size: 0.92rem;
+    }
+    .ok { border-left-color: var(--ok); }
+    .mermaid {
+      background: #fff;
+      border-radius: 8px;
+      padding: 1.25rem;
+      margin: 1.25rem 0;
+      overflow-x: auto;
+    }
+    code {
+      background: var(--surface);
+      padding: 0.15rem 0.4rem;
+      border-radius: 4px;
+      font-size: 0.88em;
+    }
+    footer {
+      margin-top: 3rem;
+      padding-top: 1rem;
+      border-top: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+  </style>
+</head>
+<body>
+  <h1>보안 체험 랩 (ouro_p2) — 설계 정리 보고서</h1>
+  <p class="meta">
+    근거: <code>ouro_p2/seed.yaml</code> (v1.0.0, 2026-04-10) · Ouroboros Seed — 보안 체험 랩
+  </p>
+
+  <h2>1. 사용할 외부 API (무료·공개 위주 관점)</h2>
+  <p>
+    시드는 <strong>실제 악성 실행·실제 유해 URL·실제 파일 시스템 접근 없음</strong>을 전제로 하므로,
+    &ldquo;보안 스캔/평판&rdquo;류 기능은 <strong>외부 상용·위협 인텔 API로 대체하지 않고 모의 도구</strong>로 구현하는 것이 요구사항과 일치합니다.
+  </p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>구분</th>
+        <th>API / 서비스</th>
+        <th>용도</th>
+        <th>비고</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><strong>필수</strong></td>
+        <td>OpenAI API</td>
+        <td>대화·추론·ReAct 에이전트 (모델 <code>gpt-5-mini</code> 고정)</td>
+        <td>과금 서비스이나 본 프로젝트의 핵심 외부 연동. <code>temperature</code>, <code>top_p</code> 등 gpt-5 계열 미지원 파라미터 사용 금지.</td>
+      </tr>
+      <tr>
+        <td><strong>핵심 설계</strong></td>
+        <td>(없음 — 모의 응답)</td>
+        <td>USB 스캔, 파일 평판, 설치 미리보기, 크랙 유혹 페이지 등</td>
+        <td>무료 외부 API로 실제 위협 데이터를 끌어오면 안전·법적·교육 목적과 충돌할 수 있어 시드상 <strong>모의</strong>가 원칙.</td>
+      </tr>
+      <tr>
+        <td><strong>선택 (무료·공개)</strong></td>
+        <td>Wikipedia / MediaWiki API</td>
+        <td>용어 설명·배경 지식 문구 보강(예: 멀웨어, 피싱 일반론)</td>
+        <td>시나리오 팩트는 여전히 가짜 자산 유지. 네트워크·레이트 제한 고려.</td>
+      </tr>
+      <tr>
+        <td><strong>선택 (무료·공개)</strong></td>
+        <td>REST Countries 등 순수 정보성 공개 API</td>
+        <td>UI 데모·무관한 스타일 참고용</td>
+        <td>보안 랩 본질과 무관; 과제 범위 밖이면 생략 가능.</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <div class="note ok">
+    <strong>정리:</strong> &ldquo;무료 API 위주&rdquo;는 <strong>도구 결과를 만드는 측면에서는 모의 함수가 본체</strong>이고,
+    외부 호출이 필요하다면 <strong>OpenAI(필수)</strong>와, 교육 문구 보강용으로만 제한적인 공개 API를 두는 구성이 시드와 가장 잘 맞습니다.
+  </div>
+
+  <h2>2. 실제 구현할 Tool 리스트</h2>
+  <p>시드 <code>mock_tools_suggested</code>를 구현 단위로 구체화했습니다. 이름·역할은 시드와 동일 계열로 맞추면 됩니다.</p>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Tool 이름 (제안)</th>
+        <th>목적</th>
+        <th>입력·출력(개략)</th>
+      </tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td><code>mock_usb_device_scan</code></td>
+        <td>가짜 USB 라벨·용량·자동실행 힌트 반환</td>
+        <td>예: 가상 드라이브 레터 또는 시나리오 id → 모의 메타데이터·경고 힌트 JSON/문자열</td>
+      </tr>
+      <tr>
+        <td><code>mock_file_reputation</code></td>
+        <td>가짜 해시·출처·커뮤니티 반응 요약</td>
+        <td>예: 가상 파일명/해시 → 모의 평판 점수·코멘트 요약</td>
+      </tr>
+      <tr>
+        <td><code>mock_installer_preview</code></td>
+        <td>가짜 설치 마법사 단계·의심 행위 플래그</td>
+        <td>예: 가상 설치 패키지 id → 단계 목록·플래그(예: 추가 SW 체크박스 등)</td>
+      </tr>
+      <tr>
+        <td><code>mock_crack_offer_page</code></td>
+        <td>가짜 크랙 사이트 스니펫·위험 신호(설문/교육용)</td>
+        <td>예: 시나리오 분기 코드 → 모의 HTML 스니펫·위험 신호 목록</td>
+      </tr>
+    </tbody>
+  </table>
+
+  <h3>그래프·앱 레벨 (Tool이 아닐 수 있음)</h3>
+  <ul>
+    <li><strong>미션 전환 / 완료 판정:</strong> <code>current_mission</code>, <code>completed_missions</code>, <code>mission_phase</code>를 갱신하는 노드 또는 헬퍼 (수락 기준: 순차 미션 및 완료 시 다음 미션).</li>
+    <li><strong>분기:</strong> <code>branch_flags</code> 및 도구 결과에 따른 조건부 엣지 (수락 기준: 최소 한 곳에서 도구 결과에 따른 그래프 분기).</li>
+    <li><strong>추적:</strong> <code>tool_trace</code>에 호출·결과 요약 적재 → Streamlit 패널에 표시 (확장 가능한 형태 허용).</li>
+  </ul>
+
+  <h2>3. LangGraph 워크플로 시각화</h2>
+  <p>
+    아래 다이어그램은 시드의 <strong>하이브리드 아키텍처</strong>를 반영합니다.
+    상위는 <strong>StateGraph</strong>로 미션·분기를 명시하고, 각 미션 내부는 <strong>ReAct</strong>(<code>create_react_agent</code> 등)로 대화·도구 호출을 처리합니다.
+    브라우저에서 Mermaid가 렌더되지 않으면 <a href="https://mermaid.live" style="color: var(--accent);">mermaid.live</a>에 코드를 붙여넣어 확인할 수 있습니다.
+  </p>
+
+  <h3>3.1 상위 미션 파이프라인 (순서 및 종료)</h3>
+  <div class="mermaid">
+flowchart LR
+  subgraph top["StateGraph — 미션 오케스트레이션"]
+    S([시작 / 초기화]) --> M1["미션: USB"]
+    M1 --> G1{"완료 조건 + 분기\n(branch_flags·도구 결과)"}
+    G1 --> M2["미션: 의심 다운로드"]
+    M2 --> G2{"완료 조건 + 분기"}
+    G2 --> M3["미션: 크랙 유혹"]
+    M3 --> G3{"완료 조건 + 분기"}
+    G3 --> F["최종 요약\n(학습 포인트)"]
+    F --> E([completed])
+    G1 -.->|필요 시| M1
+    G2 -.->|필요 시| M2
+    G3 -.->|필요 시| M3
+  end
+  </div>
+
+  <h3>3.2 미션별 권장 도구 매핑 (개념도)</h3>
+  <div class="mermaid">
+flowchart TB
+  subgraph usb["미션 USB"]
+    T1[mock_usb_device_scan]
+  end
+  subgraph dl["미션 의심 다운로드"]
+    T2[mock_file_reputation]
+    T3[mock_installer_preview]
+  end
+  subgraph crack["미션 크랙 유혹"]
+    T4[mock_crack_offer_page]
+  end
+  usb --> dl --> crack
+  </div>
+
+  <h3>3.3 ReAct 서브그래프 (개념)</h3>
+  <div class="mermaid">
+flowchart TD
+  A[사용자 메시지 수신] --> B{에이전트 노드\ngpt-5-mini}
+  B -->|도구 호출| C[ToolNode\n모의 도구들]
+  C --> D[tool_trace 갱신]
+  D --> B
+  B -->|종료| E[assistant 응답\n+ 상태 반영]
+  </div>
+
+  <h3>3.4 상태 스키마 (<code>SecurityLabState</code>)</h3>
+  <table>
+    <thead>
+      <tr><th>필드</th><th>타입</th><th>설명</th></tr>
+    </thead>
+    <tbody>
+      <tr><td><code>current_mission</code></td><td>string</td><td><code>usb</code> | <code>download</code> | <code>crack</code> | <code>completed</code></td></tr>
+      <tr><td><code>mission_phase</code></td><td>string</td><td>미션 내부 단계 id</td></tr>
+      <tr><td><code>branch_flags</code></td><td>object</td><td>분기용 플래그(위험도, 사용자 선택 코드 등)</td></tr>
+      <tr><td><code>messages</code></td><td>array</td><td>대화 메시지(또는 직렬화)</td></tr>
+      <tr><td><code>tool_trace</code></td><td>array</td><td>도구 호출·결과 요약(UI용)</td></tr>
+      <tr><td><code>completed_missions</code></td><td>array</td><td>완료된 미션 id 목록</td></tr>
+    </tbody>
+  </table>
+
+  <h2>4. 그 외 요구사항 정리</h2>
+
+  <h3>4.1 제약·비목표</h3>
+  <ul>
+    <li><strong>구현 위치:</strong> <code>ouro_p2/</code> (기존 <code>streamlit_react_app.py</code>와 분리 가능).</li>
+    <li><strong>의존성:</strong> 상위 <code>requirements.txt</code>와 호환 (langgraph, langchain-openai, langchain-core, streamlit, python-dotenv 등).</li>
+    <li><strong>안전:</strong> 가짜 자산만 사용; 실제 악성 실행·실제 유해 URL·실제 개인정보 수집 없음; 사용자 실제 파일 시스템 읽기/쓰기 없음.</li>
+    <li><strong>UI 고지:</strong> 첫 화면·푸터 등에 교육용 시뮬레이션 명시.</li>
+    <li><strong>비목표:</strong> 실제 멀웨어 실행/배포, 실제 크랙·불법 SW 링크/파일, 자격증명 저장, 불법 침해 교육.</li>
+  </ul>
+
+  <h3>4.2 UI</h3>
+  <ul>
+    <li><strong>프레임워크:</strong> Streamlit.</li>
+    <li><strong>구성:</strong> 미션 진행 패널(현재 미션·단계·분기 요약), 채팅 영역.</li>
+    <li><strong>톤:</strong> 몰입형이되 항상 가상 시뮬레이션임이 드러나야 함.</li>
+  </ul>
+
+  <h3>4.3 수락 기준 (체크리스트)</h3>
+  <ul>
+    <li>세 미션 <code>usb → download → crack</code> 순서 진행; 완료 조건 충족 시 다음 미션 전환.</li>
+    <li>최소 한 곳에서 <strong>도구 호출 결과에 따른 그래프 분기</strong>.</li>
+    <li>각 미션에서 ReAct 에이전트가 <strong>하나 이상 도구</strong> 호출 가능; Streamlit에서 <strong>도구 사용 추적</strong> 가능(확장 가능 형태).</li>
+    <li>세 미션 완료 후 <strong>최종 요약(학습 포인트)</strong> 표시.</li>
+    <li>앱 구동 시 및 주요 화면에 <strong>교육용 시뮬레이션 고지</strong> 표시.</li>
+  </ul>
+
+  <h3>4.4 종료 조건</h3>
+  <ul>
+    <li>세 미션 완료 + 최종 요약 생성 → <code>current_mission = completed</code>.</li>
+    <li>사용자가 체험 종료/리셋 선택 시 안전하게 초기 상태 복귀.</li>
+  </ul>
+
+  <h3>4.5 평가 원칙 (가중치)</h3>
+  <table>
+    <thead>
+      <tr><th>원칙</th><th>가중치</th><th>요지</th></tr>
+    </thead>
+    <tbody>
+      <tr><td>safety_education_fidelity</td><td>0.35</td><td>가짜 자산만, 위험 조장 없음, 교훈 명확</td></tr>
+      <tr><td>workflow_clarity</td><td>0.30</td><td>미션·분기 상태가 패널에서 이해 가능</td></tr>
+      <tr><td>agent_correctness</td><td>0.20</td><td>gpt-5-mini 제약 준수, 도구·그래프 일관성</td></tr>
+      <tr><td>code_maintainability</td><td>0.15</td><td><code>ouro_p2</code> 내 모듈 분리·가독성</td></tr>
+    </tbody>
+  </table>
+
+  <h3>4.6 메타데이터·특기사항</h3>
+  <ul>
+    <li>크랙 미션: 불법 복제·정품 사용 등 <strong>법·윤리 교육</strong>과 악성 유포 위험을 함께 다룰 것(시드 notes).</li>
+    <li>인터뷰 ID: <code>conversation-day3-security-lab-2026-04-10</code> · 모호도 점수: 0.12</li>
+  </ul>
+
+  <footer>
+    본 HTML은 <code>seed.yaml</code>을 토대로 작성되었습니다. Mermaid 렌더링은 로컬에서 파일을 열 때 CDN 로딩 정책에 따라 차단될 수 있으니, 그 경우 브라우저에서 동일 폴더를 간단한 정적 서버로 띄우거나 mermaid.live를 사용하세요.
+  </footer>
+
+  <script>
+    mermaid.initialize({
+      startOnLoad: true,
+      theme: "neutral",
+      securityLevel: "loose",
+      flowchart: { curve: "basis" }
+    });
+  </script>
+</body>
+</html>

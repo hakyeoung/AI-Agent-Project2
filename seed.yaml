@@ -1,0 +1,154 @@
+# Ouroboros Seed — 보안 체험 랩 (ouro_p2)
+# 인터뷰 결과 + '게임 크랙' 3번째 미션 반영. 구현 위치: day3/ouro_p2/
+
+goal: >
+  LangGraph의 ReAct 패턴과 여러 모의 도구를 사용하고, 중간 결과에 따라 분기하는
+  AI 에이전트 워크플로를 Streamlit으로 구현한다. 학생 대상으로 PC 사용 중 발생할 수 있는
+  보안 위협(USB·의심 다운로드·게임 크랙 유혹)을 실제 위험 없이 몰입형 시뮬레이션으로 체험하게 한다.
+  UI는 **실제 PC를 쓰는 듯한 긴박감**을 주되, 호스트 OS·상표를 그대로 베끼지 않고 가짜 제품명으로 윈도우풍 크롬만 차용한다.
+
+constraints:
+  - "구현 루트: 워크스페이스 내 디렉터리 `ouro_p2/` (기존 `streamlit_react_app.py`와 분리 가능)."
+  - "LLM: OpenAI `gpt-5-mini` 고정. gpt-5 계열에 지원되지 않는 API 파라미터(temperature, top_p 등) 사용 금지."
+  - "의존성: 상위 `requirements.txt`와 호환 (langgraph, langchain-openai, langchain-core, streamlit, python-dotenv 등)."
+  - "모든 시나리오 자산은 가짜(모의 파일명·가짜 경고·가짜 스캔 결과). 실제 악성 실행·실제 유해 URL 접속·실제 개인정보 수집 없음."
+  - "사용자 실제 파일 시스템을 읽거나 변경하지 않음(교육용 가상 시나리오만)."
+  - "첫 화면 및 푸터 등에 교육용 시뮬레이션임을 명시."
+  - "OS/백신/브라우저 **상표·로고·공식 UI를 복제하지 않음**. 윈도우 **느낌**만 허용하고 앱·백신 이름은 가짜(예: Endpoint Shield)."
+
+non_goals:
+  - 실제 멀웨어 샘플 실행 또는 배포
+  - 실제 크랙/불법 소프트웨어 링크·파일 제공
+  - 자격증명·개인정보 저장/수집
+  - 법적 공격·침해 행위 교육
+
+architecture:
+  style: hybrid
+  summary: >
+    상위 흐름은 LangGraph StateGraph로 미션 전환 및 조건부 분기를 명시하고,
+    각 미션 내부의 대화·도구 사용은 ReAct(create_react_agent 또는 동등 패턴)로 처리한다.
+  missions_order:
+    - id: usb
+      title: "USB / 외장매체"
+    - id: download
+      title: "의심 파일 다운로드"
+    - id: crack
+      title: "게임 모드 크랙·불법 패치 유혹"
+
+wrong_choice_experience:
+  summary: >
+    학습자가 **위험한 선택을 명시**하면(불명 파일 실행·USB에서 의심 파일 열기·크랙 적용 등),
+    실제 피해 없이 **실제 악성코드에 감염된 것 같은 전면 시뮬레이션 UI**를 보여 준다.
+  requirements:
+    - "에이전트는 위험 선택이 명확할 때 `simulate_unsafe_choice_consequence` 도구를 호출해 오버레이 데이터를 생성한다."
+    - "Streamlit에서 어두운 배경·경고 색·모노스페이스 톤 등으로 몰입형(가짜) 감염 화면을 표시한다."
+    - "오버레이 안에 **교육용 시뮬레이션**임을 명시한다. 실제 암호화·유출·금전 요구는 없다."
+    - "사용자가 가짜 감염 화면을 닫고 대화를 이어갈 수 있다."
+    - "모델이 도구 호출을 누락해도, 사용자 문장이 명백한 위험 선택(실행·설치·크랙 등 키워드)이면 동일 오버레이를 결정적으로 표시할 수 있다."
+  mission_variants:
+    - id: usb
+      theme: "AUTORUN/랜섬웨어 스타일 문구(가짜 진행률·로컬 암호화 등)"
+    - id: download
+      theme: "트로이/브라우저·시스템 장악 스타일(가짜)"
+    - id: crack
+      theme: "세이브·세션 탈취·랜섬 노트 스타일(가짜)"
+  layering: >
+    전면 감염 오버레이와 별도로, **알림 토스트·가짜 백신/보안 대화상자·스크롤되는 터미널 로그** 등
+    ‘PC에서 터지는 이벤트’ 레이어를 쌓아 긴박감을 낸다(모두 가짜·클릭으로 닫기 가능).
+
+realism_and_interaction:
+  summary: >
+    주 흐름은 **클릭·버튼·가짜 입력**이 중심이고, 채팅(에이전트)은 **항상 보이되 영역을 작게** 두어
+    힌트·메타·요약 역할을 한다. 시각적 몰입은 **알림 센터·백신 팝업·터미널 로그 스타일**을 우선한다.
+  primary_metaphor: notif_terminal_av
+  interaction_model: click_primary
+  os_chrome: windows_like_fake_brands
+  chat_role: hybrid_compact_visible
+  implementation_notes:
+    - "Streamlit `columns`로 메인(가짜 데스크톱/이벤트 영역) : 채팅 = 대략 2:1 또는 3:1 비율 권장."
+    - "미션 단계는 `st.button`·`st.radio`·가짜 텍스트 입력으로 진행; 선택은 그래프 상태(branch_flags)와 연동."
+    - "감염 시: 토스트/모달 스택 + 기존 infection_overlay와 톤 통일(어두운 경고 + 모노스페이스 로그)."
+
+ui:
+  framework: streamlit
+  components:
+    - "미션 진행 패널: 현재 미션, 단계, 분기(상태) 요약"
+    - "메인 시뮬 영역: 클릭 중심 시나리오(가짜 알림·백신 창·터미널 로그 등 윈도우풍 크롬, 가짜 브랜드)"
+    - "채팅: 항상 표시, 좁은 열 — 가이드·질문·요약"
+    - "잘못된 선택 시: 전면 가짜 감염 오버레이(branch_flags.infection_overlay) + 닫기 버튼"
+  tone: >
+    몰입형(현실과 유사한 문구·UI)이되, 항상 교육용 가상 시나리오임이 드러나야 함.
+
+mock_tools_suggested:
+  - name: mock_usb_device_scan
+    purpose: 가짜 USB 라벨/용량/자동실행 힌트 반환
+  - name: mock_file_reputation
+    purpose: 가짜 해시·출처·커뮤니티 반응 요약
+  - name: mock_installer_preview
+    purpose: 가짜 설치 마법사 단계·의심 행위 플래그
+  - name: mock_crack_offer_page
+    purpose: 가짜 크랙 사이트 스니펫·위험 신호(설문용)
+  - name: simulate_unsafe_choice_consequence
+    purpose: 위험 선택 시 가짜 감염 UI용 JSON( FAUX_INFECTION_TRIGGER ) 반환
+
+acceptance_criteria:
+  - "세 미션(usb → download → crack)이 정의된 순서로 진행되며, 미션 완료 조건이 충족되면 다음 미션으로 전환된다."
+  - "최소 한 곳 이상에서 도구 호출 결과(모의 데이터)에 따라 그래프 상 분기(다른 노드 또는 다른 시스템 지시)가 발생한다."
+  - "각 미션에서 ReAct 에이전트가 하나 이상의 도구를 호출할 수 있고, Streamlit에서 도구 사용이 사용자에게 추적 가능하다(확장 가능한 형태면 됨)."
+  - "세 미션을 모두 마친 뒤 최종 요약(학습 포인트)이 표시된다."
+  - "앱 구동 시 및 주요 화면에 교육용 시뮬레이션 고지가 보인다."
+  - "학습자가 위험한 선택을 명시하면 `simulate_unsafe_choice_consequence` 호출 후 Streamlit에 가짜 감염(랜섬/트로이 스타일) 오버레이가 표시된다."
+  - "주요 행동이 채팅 입력이 아니라 **버튼·선택지**로 이루어지며, 알림/백신/터미널 스타일 UI가 최소 1종 이상 노출된다."
+  - "채팅 영역은 항상 보이되 레이아웃상 메인 시뮬 영역보다 **시각적 비중이 작다**."
+
+ontology_schema:
+  name: SecurityLabState
+  description: 보안 체험 랩 런타임 상태
+  fields:
+    - name: current_mission
+      type: string
+      description: "usb | download | crack | completed"
+    - name: mission_phase
+      type: string
+      description: 미션 내부 단계 식별자
+    - name: branch_flags
+      type: object
+      description: 중간 결과에 따른 분기 플래그(예 위험도, 사용자 선택 코드). `infection_overlay`에 가짜 감염 UI 페이로드(title, lines, accent 등)
+    - name: messages
+      type: array
+      description: 대화 메시지(또는 LangChain 메시지 직렬화)
+    - name: tool_trace
+      type: array
+      description: 최근 도구 호출·결과 요약(UI 노출용)
+    - name: completed_missions
+      type: array
+      description: 완료된 미션 id 목록
+
+evaluation_principles:
+  - principle: safety_education_fidelity
+    weight: 0.35
+    description: 가짜 자산만 사용하고 위험 행위를 조장하지 않으며 교훈이 분명할 것
+  - principle: workflow_clarity
+    weight: 0.30
+    description: 미션·분기 상태가 패널에서 이해 가능할 것
+  - principle: agent_correctness
+    weight: 0.20
+    description: gpt-5-mini 제약을 준수하고 도구 스키마와 그래프 전이가 일관될 것
+  - principle: code_maintainability
+    weight: 0.15
+    description: ouro_p2 내 모듈 분리가 과제 범위 내에서 읽기 쉬울 것
+
+exit_conditions:
+  - "세 미션이 모두 완료되고 최종 요약이 생성되면 워크플로는 `completed`로 종료."
+  - "사용자가 명시적으로 체험 종료/리셋을 선택한 경우 안전하게 초기 상태로 복귀."
+
+metadata:
+  version: "1.2.0"
+  created_at: "2026-04-10"
+  ambiguity_score: 0.12
+  interview_id: "conversation-day3-security-lab-2026-04-10"
+  notes: >
+    Ouroboros MCP 미사용(Path B)으로 대화 인터뷰 내용에서 수동 결정.
+    크랙 미션은 법적·윤리 교육(불법 복제·정품 사용)과 악성 유포 위험을 함께 다룰 것.
+    v1.1: 잘못된 선택 시 가짜 감염 전면 UI 요구사항 및 도구 simulate_unsafe_choice_consequence 반영.
+    v1.2: 인터뷰 반영 — 알림·백신·터미널 로그 중심의 PC감, 클릭 주도, 윈도우풍+가짜 브랜드, 채팅 소형 항상 표시.
